@@ -11,6 +11,13 @@ python = "^3.9"
 django = "^4.2.6"
 djangorestframework = "^3.14.0"
 django-filter = "^23.3"
+djoser = "^2.2.0"
+gunicorn = "^21.2.0"
+python-dotenv = "^1.0.0"
+flake8 = "^6.1.0"
+psycopg2-binary = "^2.9.9"
+python-levenshtein = "^0.22.0"
+django-colorfield = "^0.10.1"
 
 
 [build-system]
