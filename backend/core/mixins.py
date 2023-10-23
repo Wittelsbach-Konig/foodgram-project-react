@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, viewsets
 
 from core.permissions import IsAdminOrReadOnly
+from recipes.models import Recipe
 from api.serializers.compact_recipe_serializers import CompactRecipeSerializer
 
 
@@ -13,17 +14,17 @@ class GetRecipe():
     def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.query_params.get('recipes_limit')
-        recipes = obj.author.recipes.all()
+        recipes = obj.recipes.all()
         if limit:
             recipes = recipes[:int(limit)]
-        return CompactRecipeSerializer(recipes, many=True).data
+        return CompactRecipeSerializer(recipes, many=True, read_only=True).data
 
 
 class GetRecipesCount():
     """Миксин для получения кол-ва рецептов."""
 
     def get_recipes_count(self, obj):
-        return obj.author.recipes.all().count()
+        return obj.recipes.count()
 
 
 class GetIsSubscribed():

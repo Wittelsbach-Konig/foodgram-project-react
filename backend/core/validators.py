@@ -42,6 +42,10 @@ def validate_ingredients(ingredients):
         )
     unique_ingredients = []
     for item in ingredients:
+        if not Ingredient.objects.filter(id=item.get('id')).exists():
+            raise ValidationError(
+                {'ingredients': ['Ингредиента не существует.']}
+            )
         ingredient = get_object_or_404(Ingredient, id=item.get('id'))
         if int(item.get('amount')) < 1:
             raise ValidationError(
@@ -53,11 +57,6 @@ def validate_ingredients(ingredients):
                 {'ingredients': ['Ингредиенты должны быть уникальными.']}
             )
         unique_ingredients.append(ingredient)
-    # if not (Ingredient.objects.filter(name__in=unique_ingredients).count()
-    #         == len(unique_ingredients)):
-    #     raise ValidationError(
-    #             {'ingredients': ['Ингредиента не существует.']}
-    #         )
     return ingredients
 
 

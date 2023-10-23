@@ -14,6 +14,7 @@ from api.serializers.users_serializers import (
     SubscribtionCheckSerializer,
 )
 from core.pagination import CustomPagination
+from core.utils import get_object_or_400
 
 
 class UserViewSet(BaseUserViewSet):
@@ -48,6 +49,12 @@ class UserViewSet(BaseUserViewSet):
         user = request.user
         author = get_object_or_404(User, pk=id)
         if request.method == 'POST':
+            if Subscription.objects.filter(user=user,
+                                           author=author).exists():
+                return Response(
+                    {"error": "Запись уже существует."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             data = {
                 'user': user.pk,
                 'author': author.pk,
@@ -57,12 +64,17 @@ class UserViewSet(BaseUserViewSet):
                 context={"request": request},
             )
             serializer.is_valid(raise_exception=True)
-            result_response = Subscription.objects.create(user=user,
-                                                          author=author)
-            serializer = SubscribtionSerializer(result_response,
+            serializer.save()
+            serializer = SubscribtionSerializer(author,
                                                 context={"request": request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+        if not Subscription.objects.filter(user=user,
+                                           author=author).exists():
+            return Response(
+                {"error": "Запись уже удалена."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         subscription = get_object_or_404(
             Subscription,
             user=user,

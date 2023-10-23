@@ -107,9 +107,7 @@ class RecipeViewSet(viewsets.ModelViewSet,
     def shopping_cart(self, request, pk):
         """Добавление/Удаление рецептов в списке покупок."""
         return abstract_post_delete_action(ShoppingListSerializer,
-                                           ShoppingList,
-                                           request,
-                                           pk)
+                                           ShoppingList, request, pk)
 
     @action(
         detail=True,
@@ -121,6 +119,4 @@ class RecipeViewSet(viewsets.ModelViewSet,
     def favorite(self, request, pk):
         """Добавление/Удаление рецептов в избранном."""
         return abstract_post_delete_action(FavouriteListSerializer,
-                                           FavouriteList,
-                                           request,
-                                           pk)
+                                           FavouriteList, request, pk)
