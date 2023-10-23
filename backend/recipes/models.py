@@ -10,18 +10,18 @@ class Tag(models.Model):
     """Модель для тега.
 
     Params:
-        tag_name (CharField[str]): название тега
-        color_code (): цветовой код
+        name (CharField[str]): название тега
+        color (): цветовой код
         slug (): slug
     """
 
-    tag_name = models.CharField(
+    name = models.CharField(
         'Название тега',
         unique=True,
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=settings.TAGNAME_MAX_LENGTH,
         db_index=True
     )
-    color_code = ColorField(
+    color = ColorField(
         default='#8420D3',
         max_length=settings.COLOR_CODE_MAX_LENGTH,
         verbose_name='Цветовой код',
@@ -36,7 +36,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-        ordering = ('tag_name',)
+        ordering = ('name',)
 
     def __str__(self) -> str:
         return self.slug
@@ -46,27 +46,27 @@ class Ingredient(models.Model):
     """Модель для ингредиентов.
 
     Params:
-        ingredient_name (CharField[str]): название ингредиента
-        measurment (CharField[str]): единица измерения
+        name (CharField[str]): название ингредиента
+        measurement_unit (CharField[str]): единица измерения
     """
 
-    ingredient_name = models.CharField(
+    name = models.CharField(
         'Название ингредиента',
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=settings.INGREDIENT_NAME_MAX_LENGTH,
         db_index=True,
     )
-    measurment = models.CharField(
+    measurement_unit = models.CharField(
         'Единица измерения',
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=settings.MEASUREMENT_UNIT_MAX_LENGTH,
     )
 
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        ordering = ('ingredient_name',)
+        ordering = ('name',)
 
     def __str__(self) -> str:
-        return f"{self.ingredient_name}, {self.measurment}"
+        return f"{self.name}, {self.measurement_unit}"
 
 
 class Recipe(models.Model):
@@ -74,8 +74,8 @@ class Recipe(models.Model):
 
     Params:
         author (ForeignKey[User]): автор рецепта
-        recipe_name (CharField[User]): название рецепта
-        picture (ImageField): картинка рецепта
+        name (CharField[User]): название рецепта
+        image (ImageField): картинка рецепта
         text (TextField[str]): текстовое описание
         ingredients (ForeignKey[IngredientQuantity]): продукты для рецепту
         tag (ForeignKey[Tag]): тег
@@ -89,11 +89,11 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Автор'
     )
-    recipe_name = models.CharField(
+    name = models.CharField(
         'Название рецепта',
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=settings.RECIPE_NAME_MAX_LENGTH,
     )
-    picture = models.ImageField(
+    image = models.ImageField(
         'Картинка',
         upload_to='recipes/',
     )
@@ -109,7 +109,7 @@ class Recipe(models.Model):
     )
     tag = models.ManyToManyField(
         Tag,
-        through='TagsRecipes',
+        # through='TagsRecipes',
         related_name='recipes',
         verbose_name='Тег',
     )
@@ -135,11 +135,11 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
 
     def __str__(self) -> str:
-        return self.recipe_name
+        return self.name
 
 
 class IngredientQuantity(models.Model):
-    """Модель для связи Ингредиентов и рецептов.
+    """Модель для связи ингредиентов и рецептов.
 
     Params:
         recipe (ForeignKey[Recipe]): рецепт
@@ -150,13 +150,13 @@ class IngredientQuantity(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='ingredient_list',
+        related_name='ingredient_quantity',
         verbose_name='Рецепт'
     )
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='in_recipe',
+        related_name='ingredient_quantity',
         verbose_name='Ингредиент'
     )
     amount = models.PositiveSmallIntegerField(
@@ -183,39 +183,39 @@ class IngredientQuantity(models.Model):
         return f"{self.recipe}: {self.amount} {self.ingredient}"
 
 
-class TagsRecipes(models.Model):
-    """Модель для связи тегов и рецептов.
+# class TagsRecipes(models.Model):
+#     """Модель для связи тегов и рецептов.
 
-    Params:
-        tag (ForeignKey[Tag]): тег
-        recipe (ForeignKey[Recipe]): рецепт
-    """
+#     Params:
+#         tag (ForeignKey[Tag]): тег
+#         recipe (ForeignKey[Recipe]): рецепт
+#     """
 
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        related_name='tags_in_recipe',
-        verbose_name='Теги',
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='recipe_tags',
-        verbose_name='Рецепты',
-    )
+#     tag = models.ForeignKey(
+#         Tag,
+#         on_delete=models.CASCADE,
+#         related_name='tags_in_recipe',
+#         verbose_name='Теги',
+#     )
+#     recipe = models.ForeignKey(
+#         Recipe,
+#         on_delete=models.CASCADE,
+#         related_name='recipe_tags',
+#         verbose_name='Рецепты',
+#     )
 
-    class Meta:
-        verbose_name = 'Список тегов'
-        verbose_name_plural = 'Список тегов'
-        constraints = (
-            models.UniqueConstraint(
-                name='unique_tag_recipe',
-                fields=('tag', 'recipe'),
-            ),
-        )
+#     class Meta:
+#         verbose_name = 'Список тегов'
+#         verbose_name_plural = 'Список тегов'
+#         constraints = (
+#             models.UniqueConstraint(
+#                 name='unique_tag_recipe',
+#                 fields=('tag', 'recipe'),
+#             ),
+#         )
 
-    def __str__(self) -> str:
-        return f"{self.recipe} имеет тег {self.tag}"
+#     def __str__(self) -> str:
+#         return f"{self.recipe} имеет тег {self.tag}"
 
 
 class ShoppingList(models.Model):
@@ -230,13 +230,13 @@ class ShoppingList(models.Model):
         User,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
-        related_name='shopping_user',
+        related_name='shopping_list',
     )
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='shopping_recipe',
+        related_name='shopping_list',
     )
 
     class Meta:
@@ -265,13 +265,13 @@ class FavouriteList(models.Model):
         User,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
-        related_name='favourites_user',
+        related_name='favourites_list',
     )
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='favourites_recipe',
+        related_name='favourites_list',
     )
 
     class Meta:

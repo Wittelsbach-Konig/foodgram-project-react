@@ -43,7 +43,8 @@ PROJECT_APPS = [
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
-    'obsceneLang.apps.ObscenelangConfig'
+    'obsceneLang.apps.ObscenelangConfig',
+    'core.apps.CoreConfig',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
@@ -78,14 +79,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'django'),
+#         'USER': os.getenv('POSTGRES_USER', 'mastermind'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
+#         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+#         'PORT': os.getenv('DB_PORT', 5432),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'django'),
-        'USER': os.getenv('POSTGRES_USER', 'mastermind'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', 5432),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -122,7 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
-PAGE_COUNT = 10
+PAGE_COUNT = 6
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -139,20 +147,33 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': '#/password/reset/confirm/{uid}/{token}',
-    'USERNAME_RESET_CONFIRM_URL': '#/username/reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': True,
-    'SERIALIZERS': {},
+    "LOGIN_FIELD": "email",
+    'SERIALIZERS': {
+        'user_create': ('api.serializers.'
+                        'users_serializers.UserSignUpSerializer'),
+        'user': 'api.serializers.users_serializers.UserSerializer',
+        'current_user': 'api.serializers.users_serializers.UserSerializer',
+    },
+    'PERMISSIONS': {
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    },
+    'HIDE_USERS': False,
 }
 
-USERNAME_MAX_LENGTH = 20  # Максимальный размер логина
+USERNAME_MAX_LENGTH = 150  # Максимальный размер логина
 WORD_MAX_LENGTH = 50  # Максимальный размер слова
 COMMENTS_MAX_LENGTH = 75  # Максимальный размер комментария
 THRESHOLD = 2  # Порог для расстояния Левенштейна
 EMAIL_MAX_LENGTH = 254  # Максимальный размер email
-SLUG_MAX_LENGTH = 50  # Максимальный размер slug
-NAME_MAX_LENGTH = 100  # Максимальный размер имени
-LASTNAME_MAX_LENGTH = 100  # Максимальный размер фамилии
+SLUG_MAX_LENGTH = 200  # Максимальный размер slug
+FIRSTNAME_MAX_LENGTH = 150  # Максимальный размер имени
+TAGNAME_MAX_LENGTH = 200  # Максимальный размер названия тега
+LASTNAME_MAX_LENGTH = 150  # Максимальный размер фамилии
 MIN_VALUE = 1  # Минимальное кол-во времени или кол-во ингредиента
 COLOR_CODE_MAX_LENGTH = 7  # Максимальный размер цветового кода
+ROLE_MAX_LENGTH = 20  # Максимальный размер названия роли
+INGREDIENT_NAME_MAX_LENGTH = 200  # Максимальный размер ингредиента
+MEASUREMENT_UNIT_MAX_LENGTH = 200  # Максимальный размер единицы измерения
+RECIPE_NAME_MAX_LENGTH = 200  # Максимальный размер названия рецепта
+CSV_FOLDER = f"{BASE_DIR}/static/data/"  # Расположение csv файлов

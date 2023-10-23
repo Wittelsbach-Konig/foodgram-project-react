@@ -12,7 +12,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     list_display: tuple = (
         'pk',
-        'recipe_name',
+        'name',
         'author',
         'get_favourites',
         'show_tags',
@@ -20,11 +20,11 @@ class RecipeAdmin(admin.ModelAdmin):
     )
     list_filter: tuple = (
         'author',
-        'recipe_name',
+        'name',
         'tag',
     )
     search_fields: tuple = (
-        'recipe_name',
+        'name',
         'author',
     )
 
@@ -40,14 +40,14 @@ class IngredientAdmin(admin.ModelAdmin):
 
     list_display: tuple = (
         'pk',
-        'ingredient_name',
-        'measurment',
+        'name',
+        'measurement_unit',
     )
     list_filter: tuple = (
-        'ingredient_name',
+        'name',
     )
     search_fields: tuple = (
-        'ingredient_name',
+        'name',
     )
 
 
@@ -67,8 +67,8 @@ class TagAdmin(admin.ModelAdmin):
 
     list_display: tuple = (
         'pk',
-        'tag_name',
-        'color_code',
+        'name',
+        'color',
         'slug',
     )
 
