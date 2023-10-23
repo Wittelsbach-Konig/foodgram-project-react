@@ -1,6 +1,6 @@
 # Image and csv
-backend/static/*
-backend/media/*
+backend/static/
+backend/media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
