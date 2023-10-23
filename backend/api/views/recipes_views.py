@@ -1,13 +1,13 @@
 from django.db.models import Sum
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions, viewsets, status
-from rest_framework.response import Response
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 
 from core.mixins import (
     ListAndRetrieveModelMixin,
     CSVResponseMixin,
 )
+from core.pagination import CustomPagination
+from core.utils import abstract_post_delete_action
 from recipes.models import (
     Recipe,
     Tag,
@@ -21,7 +21,6 @@ from api.serializers.recipe_serializers import (
 )
 from api.serializers.compact_recipe_serializers import (
     IngredientSerializer,
-    CompactRecipeSerializer,
     FavouriteListSerializer,
     ShoppingListSerializer,
     TagSerializer,
@@ -57,12 +56,13 @@ class RecipeViewSet(viewsets.ModelViewSet,
     """ViewSet для рецептов, список покупок и избранного."""
 
     queryset = (Recipe.objects.select_related('author')
-                .prefetch_related('tag', 'ingredients').all())
+                .prefetch_related('tags', 'ingredients').all())
     permission_classes = (
         IsAuthorOrAdminOrReadOnly,
     )
     filterset_class = RecipeFilterSet
     serializer_class = RecipeSerializer
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -74,53 +74,28 @@ class RecipeViewSet(viewsets.ModelViewSet,
         url_name='download_shopping_cart',
         permission_classes=(permissions.IsAuthenticated,),
     )
-    def download_shopping_cart(self):
+    def download_shopping_cart(self, request):
         """Загрузка списка покупок."""
         ingredient_list = (
             IngredientQuantity.objects.filter(
-                recipe__shopping_list__user=self.request.user
+                recipe__shopping_list__user=request.user
             ).values(
-                'ingredient__name',
-                'ingredient__measurement_unit',
+                'ingredients__name',
+                'ingredients__measurement_unit',
             ).order_by(
-                'ingredient__name',
+                'ingredients__name',
             ).annotate(sum=Sum('amount'))
         )
         data = [
             {
-                'Ингредиент': item['ingredient__name'],
-                'Единица измерения': item['ingredient__measurement_unit'],
+                'Ингредиент': item['ingredients__name'],
+                'Единица измерения': item['ingredients__measurement_unit'],
                 'Количество': item['sum']
             }
             for item in ingredient_list
         ]
         filename = "shopping_list.csv"
         return self.render_to_csv_response(data, filename)
-
-    def abstract_post_delete_action(self, custom_serializer, model):
-        """Абстрактный action для POST, DELETE методов."""
-        recipe = get_object_or_404(Recipe, id=self.kwargs.get("recipe_id"))
-        if self.request.method == 'POST':
-            serializer = custom_serializer(
-                data={
-                    'user': self.request.user.id,
-                    'recipe': recipe.pk,
-                }
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            compact_recipe_serializer = CompactRecipeSerializer(recipe)
-            return Response(
-                compact_recipe_serializer.data,
-                status=status.HTTP_201_CREATED,
-            )
-        model_recipe = get_object_or_404(
-            model,
-            user=self.request.user,
-            recipe=recipe,
-        )
-        model_recipe.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=True,
@@ -129,32 +104,12 @@ class RecipeViewSet(viewsets.ModelViewSet,
         url_name='shopping_cart',
         permission_classes=(permissions.IsAuthenticated,),
     )
-    def shopping_cart(self):
+    def shopping_cart(self, request, pk):
         """Добавление/Удаление рецептов в списке покупок."""
-        self.abstract_post_delete_action(ShoppingListSerializer,
-                                         ShoppingList)
-        # recipe = get_object_or_404(Recipe, id=self.kwargs.get("recipe_id"))
-        # if self.request.method == 'POST':
-        #     serializer = ShoppingListSerializer(
-        #         data={
-        #             'user': self.request.user.id,
-        #             'recipe': recipe.pk,
-        #         }
-        #     )
-        #     serializer.is_valid(raise_exception=True)
-        #     serializer.save()
-        #     compact_recipe_serializer = CompactRecipeSerializer(recipe)
-        #     return Response(
-        #         compact_recipe_serializer.data,
-        #         status=status.HTTP_201_CREATED,
-        #     )
-        # shopping_cart_recipe = get_object_or_404(
-        #     ShoppingList,
-        #     user=self.request.user,
-        #     recipe=recipe,
-        # )
-        # shopping_cart_recipe.delete()
-        # return Response(status=status.HTTP_204_NO_CONTENT)
+        return abstract_post_delete_action(ShoppingListSerializer,
+                                           ShoppingList,
+                                           request,
+                                           pk)
 
     @action(
         detail=True,
@@ -163,29 +118,9 @@ class RecipeViewSet(viewsets.ModelViewSet,
         url_name='favorite',
         permission_classes=(permissions.IsAuthenticated,),
     )
-    def favorite(self):
+    def favorite(self, request, pk):
         """Добавление/Удаление рецептов в избранном."""
-        self.abstract_post_delete_action(FavouriteListSerializer,
-                                         FavouriteList)
-        # recipe = get_object_or_404(Recipe, id=self.kwargs.get("recipe_id"))
-        # if self.request.method == 'POST':
-        #     serializer = FavouriteListSerializer(
-        #         data={
-        #             'user': self.request.user.id,
-        #             'recipe': recipe.pk,  # id
-        #         }
-        #     )
-        #     serializer.is_valid(raise_exception=True)
-        #     serializer.save()
-        #     compact_recipe_serializer = CompactRecipeSerializer(recipe)
-        #     return Response(
-        #         compact_recipe_serializer.data,
-        #         status=status.HTTP_201_CREATED,
-        #     )
-        # favorite_recipe = get_object_or_404(
-        #     FavouriteList,
-        #     user=self.request.user,
-        #     recipe=recipe,
-        # )
-        # favorite_recipe.delete()
-        # return Response(status=status.HTTP_204_NO_CONTENT)
+        return abstract_post_delete_action(FavouriteListSerializer,
+                                           FavouriteList,
+                                           request,
+                                           pk)

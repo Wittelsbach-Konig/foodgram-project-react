@@ -78,7 +78,7 @@ class Recipe(models.Model):
         image (ImageField): картинка рецепта
         text (TextField[str]): текстовое описание
         ingredients (ForeignKey[IngredientQuantity]): продукты для рецепту
-        tag (ForeignKey[Tag]): тег
+        tags (ForeignKey[Tag]): тег
         cooking_time (PositiveSmallIntegerField[int]): время приготовления
         pub_date (DateTimeField[datetime]): время публикации
     """
@@ -107,7 +107,7 @@ class Recipe(models.Model):
         related_name='recipes',
         verbose_name='Ингредиенты'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         # through='TagsRecipes',
         related_name='recipes',
@@ -153,7 +153,7 @@ class IngredientQuantity(models.Model):
         related_name='ingredient_quantity',
         verbose_name='Рецепт'
     )
-    ingredient = models.ForeignKey(
+    ingredients = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         related_name='ingredient_quantity',
@@ -175,12 +175,12 @@ class IngredientQuantity(models.Model):
         constraints = (
             models.UniqueConstraint(
                 name='unique_ingredients',
-                fields=('recipe', 'ingredient'),
+                fields=('recipe', 'ingredients'),
             ),
         )
 
     def __str__(self) -> str:
-        return f"{self.recipe}: {self.amount} {self.ingredient}"
+        return f"{self.recipe}: {self.amount} {self.ingredients}"
 
 
 # class TagsRecipes(models.Model):

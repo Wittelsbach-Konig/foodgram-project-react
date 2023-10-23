@@ -10,7 +10,7 @@ from api.serializers.compact_recipe_serializers import CompactRecipeSerializer
 class GetRecipe():
     """Миксин для получения списка рецептов."""
 
-    def get_recipes(self, obj, serializer):
+    def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.query_params.get('recipes_limit')
         recipes = obj.author.recipes.all()
@@ -51,9 +51,11 @@ class GetFavorites():
 class GetShoppingList():
     """Миксин для проверки списка покупок."""
 
-    def get_is_in_shopping_list(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         """Находится ли в списке покупок."""
         user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
         return user.shopping_list.filter(recipe=obj.id).exists()
 
 

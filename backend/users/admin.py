@@ -12,16 +12,12 @@ class UserAdmin(admin.ModelAdmin):
         'first_name',
         'last_name',
         'email',
-        'role',
     )
     list_filter: tuple = (
         'username',
         'email',
     )
     empty_value_display: str = '-пусто-'
-    list_editable: tuple = (
-        'role',
-    )
     search_fields: tuple = (
         'username',
         'email',

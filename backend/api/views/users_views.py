@@ -13,6 +13,7 @@ from api.serializers.users_serializers import (
     SubscribtionSerializer,
     SubscribtionCheckSerializer,
 )
+from core.pagination import CustomPagination
 
 
 class UserViewSet(BaseUserViewSet):
@@ -20,12 +21,8 @@ class UserViewSet(BaseUserViewSet):
 
     query = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticated, )
-
-    def get_permissions(self):
-        if self.action in ("create", "list"):
-            return [permissions.AllowAny()]
-        return super().get_permissions()
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    pagination_class = CustomPagination
 
     @action(
         detail=False,
@@ -40,7 +37,7 @@ class UserViewSet(BaseUserViewSet):
         return Response(serializer.data)
 
     @action(
-        detail=False,
+        detail=True,
         methods=('post', 'delete',),
         permission_classes=(permissions.IsAuthenticated,),
         url_path='subscribe',
@@ -68,20 +65,20 @@ class UserViewSet(BaseUserViewSet):
 
         subscription = get_object_or_404(
             Subscription,
-            follower=user,
+            user=user,
             author=author,
         )
         subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
-        detail=True,
+        detail=False,
         methods=('get',),
         permission_classes=(permissions.IsAuthenticated,),
         url_path='subscriptions',
         url_name='subscriptions',
     )
-    def subscriptions(self, request, id):
+    def subscriptions(self, request):
         """Получение списка подписок."""
         queryset = User.objects.filter(author__user=request.user)
         pages = self.paginate_queryset(queryset)

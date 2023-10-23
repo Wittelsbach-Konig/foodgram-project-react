@@ -1,44 +1,9 @@
-from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.conf import settings
 
 from obsceneLang.validators import validate_no_obscenities
-
-
-class CustomUserManager(UserManager):
-    """ Менеджер для кастомной модели User. """
-
-    def create_superuser(self, username, email=None,
-                         password=None, **extra_fields):
-        """Переопределённая функция создания суперпользователя.
-
-        Args:
-            username (str): имя пользователя
-            email (str, optional): почтовый адрес. Defaults to None.
-            password (str, optional): пароль. Defaults to None.
-
-        Raises:
-            ValueError: is_staff должен быть равен True
-            ValueError: is_superuser должен быть равен True
-            ValueError: is_admin должен быть равен True
-
-        Returns:
-            _create_user(): создание пользователя
-        """
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-
-        extra_fields.setdefault('role', User.Roles.ADMIN)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-        if extra_fields.get('role') != User.Roles.ADMIN:
-            raise ValueError('Superuser must have is_admin=True.')
-
-        return self._create_user(username, email, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -51,16 +16,6 @@ class User(AbstractUser):
         bio (TextField[str]): биография
         role (CharField[str]): роль, возможны user, admin
     """
-
-    class Roles(models.TextChoices):
-        """Возможные роли пользователей
-
-        Literals:
-            USER (str): Роль пользователя
-            ADMIN (str): Роль администратора
-        """
-        USER = 'user', 'Пользователь'
-        ADMIN = 'admin', 'Администратор'
 
     username = models.CharField(
         'Логин',
@@ -94,12 +49,6 @@ class User(AbstractUser):
             validate_no_obscenities,
         )
     )
-    role = models.CharField(
-        'Роль',
-        max_length=settings.ROLE_MAX_LENGTH,
-        choices=Roles.choices,
-        default=Roles.USER,
-    )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [
         'username',
@@ -107,17 +56,10 @@ class User(AbstractUser):
         'last_name',
     ]
 
-    objects = CustomUserManager()
-
     class Meta:
         ordering = ('id', )
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-
-    @property
-    def is_admin(self) -> bool:
-        """Проверка является ли пользователь админом."""
-        return self.is_superuser or self.role == self.Roles.ADMIN.value
 
     def __str__(self) -> str:
         return self.username[:settings.USERNAME_MAX_LENGTH]

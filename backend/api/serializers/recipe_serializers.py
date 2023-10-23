@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from rest_framework import serializers
@@ -7,11 +8,10 @@ from recipes.models import (
     Ingredient,
     IngredientQuantity,
 )
-from api.validators import (
-    validate_ingredients,
+from core.validators import (
+    ValidateRecipeMixin,
     validate_tags,
-    validate_text,
-    validate_cooking_time,
+    validate_ingredients,
 )
 from obsceneLang.validators import validate_no_obscenities
 from core.mixins import (
@@ -30,7 +30,8 @@ from api.serializers.compact_recipe_serializers import (
 class RecipeSerializer(serializers.ModelSerializer,
                        GetRecipe,
                        GetFavorites,
-                       GetShoppingList,):
+                       GetShoppingList,
+                       ValidateRecipeMixin):
     """Сериалайзер для рецептов."""
 
     author = UserSerializer(read_only=True)
@@ -44,8 +45,12 @@ class RecipeSerializer(serializers.ModelSerializer,
         max_length=settings.RECIPE_NAME_MAX_LENGTH,
         validators=(validate_no_obscenities,)
     )
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField(
+        read_only=True
+    )
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        read_only=True
+    )
     image = CustomBase64ImageFieldMixin()
 
     class Meta:
@@ -67,10 +72,13 @@ class RecipeSerializer(serializers.ModelSerializer,
         """Добавление тегов к рецепту."""
         instance.tags.set(tags)
 
-    def make_ingredients(self, instance, ingredients):
+    @transaction.atomic
+    def make_ingredients(self, instance, valid_ingredients):
         """Добавление ингредиентов к рецепту."""
         objects = []
-        for data in ingredients:
+        print(valid_ingredients)
+        print(type(valid_ingredients))
+        for data in valid_ingredients:
             amount = data.get('amount')
             ingredients = get_object_or_404(Ingredient, id=data.get('id'))
             objects.append(
@@ -82,6 +90,7 @@ class RecipeSerializer(serializers.ModelSerializer,
             )
         IngredientQuantity.objects.bulk_create(objects)
 
+    @transaction.atomic
     def create(self, validated_data):
         """Создание рецепта - POST."""
         ingredients = validated_data.pop('ingredients')
@@ -103,15 +112,9 @@ class RecipeSerializer(serializers.ModelSerializer,
         validated_tags = validate_tags(tags)
         data['tags'] = validated_tags
 
-        text = self.initial_data.get('text')
-        validated_text = validate_text(text)
-        data['text'] = validated_text
-
-        cooking_time = self.initial_data.get('cooking_time')
-        validated_cooking_time = validate_cooking_time(cooking_time)
-        data['cooking_time'] = validated_cooking_time
         return data
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         """Обновление рецепта - PATCH."""
         instance.tags.clear()

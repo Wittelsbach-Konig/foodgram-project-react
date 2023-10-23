@@ -21,7 +21,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter: tuple = (
         'author',
         'name',
-        'tag',
+        'tags',
     )
     search_fields: tuple = (
         'name',
@@ -57,7 +57,7 @@ class IngredientQuantityAdmin(admin.ModelAdmin):
     list_display: tuple = (
         'pk',
         'recipe',
-        'ingredient',
+        'ingredients',
         'amount',
     )
 

@@ -40,7 +40,7 @@ class TagSerializer(serializers.ModelSerializer):
     """Сериалайзер для тегов."""
 
     class Meta:
-        model = Tag,
+        model = Tag
         fields = (
             'id',
             'name',
