@@ -1,10 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.serializers import ValidationError
-from rest_framework import status
 from django.conf import settings
 
 from recipes.models import Tag, Ingredient
-from users.models import Subscription
 from obsceneLang.utils import (
     get_words_from_text,
     get_forbidden_words,

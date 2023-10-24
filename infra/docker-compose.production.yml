@@ -14,9 +14,7 @@ services:
       - pg_data:/var/lib/postgresql/data
   
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: beonewithyuri/kittygram_backend
     env_file:
       - ../.env
     volumes:
