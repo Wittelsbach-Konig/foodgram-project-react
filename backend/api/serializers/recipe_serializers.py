@@ -1,29 +1,16 @@
-from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from recipes.models import (
-    Recipe,
-    Tag,
-    Ingredient,
-    IngredientQuantity,
-    FavouriteList,
-    ShoppingList,
-)
-from core.validators import (
-    ValidateRecipeMixin,
-    validate_tags,
-    validate_ingredients,
-)
-from obsceneLang.validators import validate_no_obscenities
-from core.mixins import (
-    GetRecipe,
-    GetFavorites,
-    GetShoppingList,
-)
 from api.serializers.users_serializers import UserSerializer
 from core.field_mixins import CustomBase64ImageFieldMixin
+from core.mixins import GetFavorites, GetRecipe, GetShoppingList
+from core.validators import (ValidateRecipeMixin, validate_ingredients,
+                             validate_tags)
+from obsceneLang.validators import validate_no_obscenities
+from recipes.models import (FavouriteList, Ingredient, IngredientQuantity,
+                            Recipe, ShoppingList, Tag)
 
 
 class TagSerializer(serializers.ModelSerializer):

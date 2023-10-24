@@ -1,19 +1,12 @@
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.conf import settings
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-from djoser.serializers import UserCreateSerializer
 
-from users.models import (
-    User,
-    Subscription,
-)
+from core.mixins import GetIsSubscribed, GetRecipe, GetRecipesCount
 from obsceneLang.validators import validate_no_obscenities
-from core.mixins import (
-    GetIsSubscribed,
-    GetRecipe,
-    GetRecipesCount,
-)
+from users.models import Subscription, User
 
 
 class UserSerializer(serializers.ModelSerializer,

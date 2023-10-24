@@ -2,32 +2,18 @@ from django.db.models import Sum
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 
-from core.mixins import (
-    ListAndRetrieveModelMixin,
-    CSVResponseMixin,
-)
+from api.filters import IngredientFilterSet, RecipeFilterSet
+from api.serializers.recipe_serializers import (FavouriteListSerializer,
+                                                IngredientSerializer,
+                                                RecipeSerializer,
+                                                ShoppingListSerializer,
+                                                TagSerializer)
+from core.mixins import CSVResponseMixin, ListAndRetrieveModelMixin
 from core.pagination import CustomPagination
-from core.utils import recipe_post_delete_action
-from recipes.models import (
-    Recipe,
-    Tag,
-    Ingredient,
-    FavouriteList,
-    ShoppingList,
-    IngredientQuantity,
-)
-from api.serializers.recipe_serializers import (
-    RecipeSerializer,
-    IngredientSerializer,
-    FavouriteListSerializer,
-    ShoppingListSerializer,
-    TagSerializer,
-)
-from api.filters import (
-    IngredientFilterSet,
-    RecipeFilterSet,
-)
 from core.permissions import IsAuthorOrAdminOrReadOnly
+from core.utils import recipe_post_delete_action
+from recipes.models import (FavouriteList, Ingredient, IngredientQuantity,
+                            Recipe, ShoppingList, Tag)
 
 
 class TagViewSet(ListAndRetrieveModelMixin):

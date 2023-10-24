@@ -1,20 +1,15 @@
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as BaseUserViewSet
 from rest_framework import permissions
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from users.models import (
-    User,
-    Subscription,
-)
-from api.serializers.users_serializers import (
-    UserSerializer,
-    SubscribtionSerializer,
-    SubscribtionCheckSerializer,
-)
+from api.serializers.users_serializers import (SubscribtionCheckSerializer,
+                                               SubscribtionSerializer,
+                                               UserSerializer)
 from core.pagination import CustomPagination
 from core.utils import user_post_delete_action
+from users.models import Subscription, User
 
 
 class UserViewSet(BaseUserViewSet):

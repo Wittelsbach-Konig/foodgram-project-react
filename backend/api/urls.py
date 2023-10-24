@@ -1,13 +1,10 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views.users_views import UserViewSet
-from .views.recipes_views import (
-    RecipeViewSet,
-    TagViewSet,
-    IngredientViewSet,
-)
-
+from api.views.recipes_views import (IngredientViewSet,
+                                     RecipeViewSet,
+                                     TagViewSet)
+from api.views.users_views import UserViewSet
 
 API_PREFIX = 'v1/'
 
