@@ -109,7 +109,6 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(
         Tag,
-        # through='TagsRecipes',
         related_name='recipes',
         verbose_name='Тег',
     )
@@ -181,41 +180,6 @@ class IngredientQuantity(models.Model):
 
     def __str__(self) -> str:
         return f"{self.recipe}: {self.amount} {self.ingredients}"
-
-
-# class TagsRecipes(models.Model):
-#     """Модель для связи тегов и рецептов.
-
-#     Params:
-#         tag (ForeignKey[Tag]): тег
-#         recipe (ForeignKey[Recipe]): рецепт
-#     """
-
-#     tag = models.ForeignKey(
-#         Tag,
-#         on_delete=models.CASCADE,
-#         related_name='tags_in_recipe',
-#         verbose_name='Теги',
-#     )
-#     recipe = models.ForeignKey(
-#         Recipe,
-#         on_delete=models.CASCADE,
-#         related_name='recipe_tags',
-#         verbose_name='Рецепты',
-#     )
-
-#     class Meta:
-#         verbose_name = 'Список тегов'
-#         verbose_name_plural = 'Список тегов'
-#         constraints = (
-#             models.UniqueConstraint(
-#                 name='unique_tag_recipe',
-#                 fields=('tag', 'recipe'),
-#             ),
-#         )
-
-#     def __str__(self) -> str:
-#         return f"{self.recipe} имеет тег {self.tag}"
 
 
 class ShoppingList(models.Model):

@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as BaseUserViewSet
-from rest_framework import permissions, status
+from rest_framework import permissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -14,7 +14,7 @@ from api.serializers.users_serializers import (
     SubscribtionCheckSerializer,
 )
 from core.pagination import CustomPagination
-from core.utils import get_object_or_400
+from core.utils import user_post_delete_action
 
 
 class UserViewSet(BaseUserViewSet):
@@ -33,6 +33,7 @@ class UserViewSet(BaseUserViewSet):
         url_name='me',
     )
     def me(self, request):
+        """Возврат профиля пользователя."""
         user = get_object_or_404(User, username=request.user.username)
         serializer = self.get_serializer(user)
         return Response(serializer.data)
@@ -46,42 +47,10 @@ class UserViewSet(BaseUserViewSet):
     )
     def subscribe(self, request, id):
         """Создание/удаление подписок."""
-        user = request.user
-        author = get_object_or_404(User, pk=id)
-        if request.method == 'POST':
-            if Subscription.objects.filter(user=user,
-                                           author=author).exists():
-                return Response(
-                    {"error": "Запись уже существует."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            data = {
-                'user': user.pk,
-                'author': author.pk,
-            }
-            serializer = SubscribtionCheckSerializer(
-                data=data,
-                context={"request": request},
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            serializer = SubscribtionSerializer(author,
-                                                context={"request": request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        if not Subscription.objects.filter(user=user,
-                                           author=author).exists():
-            return Response(
-                {"error": "Запись уже удалена."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        subscription = get_object_or_404(
-            Subscription,
-            user=user,
-            author=author,
+        return user_post_delete_action(
+            request, id, Subscription, SubscribtionSerializer,
+            User, SubscribtionCheckSerializer
         )
-        subscription.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,

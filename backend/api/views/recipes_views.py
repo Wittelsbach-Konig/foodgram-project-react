@@ -7,7 +7,7 @@ from core.mixins import (
     CSVResponseMixin,
 )
 from core.pagination import CustomPagination
-from core.utils import abstract_post_delete_action
+from core.utils import recipe_post_delete_action
 from recipes.models import (
     Recipe,
     Tag,
@@ -18,8 +18,6 @@ from recipes.models import (
 )
 from api.serializers.recipe_serializers import (
     RecipeSerializer,
-)
-from api.serializers.compact_recipe_serializers import (
     IngredientSerializer,
     FavouriteListSerializer,
     ShoppingListSerializer,
@@ -44,7 +42,11 @@ class TagViewSet(ListAndRetrieveModelMixin):
 
 
 class IngredientViewSet(ListAndRetrieveModelMixin):
-    """ViewSet для ингредиентов."""
+    """ViewSet для ингредиентов.
+
+    Args:
+        ListAndCreateModelMixin (type): Кастомный viewset, доступен метод GET.
+    """
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -53,13 +55,15 @@ class IngredientViewSet(ListAndRetrieveModelMixin):
 
 class RecipeViewSet(viewsets.ModelViewSet,
                     CSVResponseMixin):
-    """ViewSet для рецептов, список покупок и избранного."""
+    """ViewSet для рецептов, список покупок и избранного.
+
+    Args:
+        CSVResponseMixin (type): Кастомный миксин для экспорта csv-файла.
+    """
 
     queryset = (Recipe.objects.select_related('author')
                 .prefetch_related('tags', 'ingredients').all())
-    permission_classes = (
-        IsAuthorOrAdminOrReadOnly,
-    )
+    permission_classes = (IsAuthorOrAdminOrReadOnly, )
     filterset_class = RecipeFilterSet
     serializer_class = RecipeSerializer
     pagination_class = CustomPagination
@@ -106,8 +110,8 @@ class RecipeViewSet(viewsets.ModelViewSet,
     )
     def shopping_cart(self, request, pk):
         """Добавление/Удаление рецептов в списке покупок."""
-        return abstract_post_delete_action(ShoppingListSerializer,
-                                           ShoppingList, request, pk)
+        return recipe_post_delete_action(ShoppingListSerializer,
+                                         ShoppingList, request, pk, Recipe)
 
     @action(
         detail=True,
@@ -118,5 +122,5 @@ class RecipeViewSet(viewsets.ModelViewSet,
     )
     def favorite(self, request, pk):
         """Добавление/Удаление рецептов в избранном."""
-        return abstract_post_delete_action(FavouriteListSerializer,
-                                           FavouriteList, request, pk)
+        return recipe_post_delete_action(FavouriteListSerializer,
+                                         FavouriteList, request, pk, Recipe)

@@ -61,6 +61,7 @@ def validate_ingredients(ingredients):
 
 
 class ValidateRecipeMixin():
+    """Кастомный миксин для валидации оставшихся полей рецепта."""
 
     def validate_image(self, value):
         """Валидация картинки."""
@@ -105,14 +106,14 @@ class ValidateRecipeMixin():
         return value
 
 
-def validate_subscription(author, user):
-    if author == user:
-        return {
-            "errors": "Нельзя подписываться на самого себя",
-            "status": status.HTTP_400_BAD_REQUEST,
-        }
-    if Subscription.objects.filter(user=user, author=author).exists():
-        return {
-            "errors": "Подписка уже оформлена",
-            "status": status.HTTP_400_BAD_REQUEST,
-        }
+# def validate_subscription(author, user):
+#     if author == user:
+#         return {
+#             "errors": "Нельзя подписываться на самого себя",
+#             "status": status.HTTP_400_BAD_REQUEST,
+#         }
+#     if Subscription.objects.filter(user=user, author=author).exists():
+#         return {
+#             "errors": "Подписка уже оформлена",
+#             "status": status.HTTP_400_BAD_REQUEST,
+#         }

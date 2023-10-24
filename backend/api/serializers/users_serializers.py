@@ -1,5 +1,4 @@
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db import IntegrityError
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -107,6 +106,7 @@ class SubscribtionCheckSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        """Валидация самоподписки."""
         if self.context.get('request').user == data.get('author'):
             raise serializers.ValidationError(
                 'Нельзя подписываться на себя!'

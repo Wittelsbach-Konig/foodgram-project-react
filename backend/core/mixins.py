@@ -4,8 +4,7 @@ from django.http import HttpResponse
 from rest_framework import mixins, viewsets
 
 from core.permissions import IsAdminOrReadOnly
-from recipes.models import Recipe
-from api.serializers.compact_recipe_serializers import CompactRecipeSerializer
+from core.serializers import CompactRecipeSerializer
 
 
 class GetRecipe():

@@ -1,12 +1,15 @@
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from recipes.models import (
     Recipe,
+    Tag,
     Ingredient,
     IngredientQuantity,
+    FavouriteList,
+    ShoppingList,
 )
 from core.validators import (
     ValidateRecipeMixin,
@@ -21,10 +24,95 @@ from core.mixins import (
 )
 from api.serializers.users_serializers import UserSerializer
 from core.field_mixins import CustomBase64ImageFieldMixin
-from api.serializers.compact_recipe_serializers import (
-    TagSerializer,
-    IngredientQuantitySerializer,
-)
+
+
+class TagSerializer(serializers.ModelSerializer):
+    """Сериалайзер для тегов."""
+
+    class Meta:
+        model = Tag
+        fields = (
+            'id',
+            'name',
+            'color',
+            'slug',
+        )
+        read_only_fields = (
+            'id',
+            'name',
+            'color',
+            'slug',
+        )
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    """Сериалайзер для ингредиентов."""
+
+    class Meta:
+        model = Ingredient
+        fields = (
+            'id',
+            'name',
+            'measurement_unit',
+        )
+        read_only_fields = (
+            'id',
+            'name',
+            'measurement_unit',
+        )
+
+
+class IngredientQuantitySerializer(serializers.ModelSerializer):
+    """Сериалайзер для количества ингредиентов."""
+
+    id = serializers.ReadOnlyField(source="ingredients.id")
+    name = serializers.ReadOnlyField(source="ingredients.name")
+    measurement_unit = serializers.ReadOnlyField(
+        source="ingredients.measurement_unit"
+    )
+
+    class Meta:
+        model = IngredientQuantity
+        fields = (
+            "id",
+            "name",
+            "measurement_unit",
+            "amount",
+        )
+
+
+class FavouriteListSerializer(serializers.ModelSerializer):
+    """Сериалайзер для списка избранного."""
+
+    class Meta:
+        model = FavouriteList
+        fields = (
+            'user',
+            'recipe',
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=FavouriteList.objects.all(),
+                fields=('user', 'recipe'),
+            ),
+        ]
+
+
+class ShoppingListSerializer(serializers.ModelSerializer):
+    """Сериалайзер для списка покупок."""
+
+    class Meta:
+        model = ShoppingList
+        fields = (
+            'user',
+            'recipe',
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=ShoppingList.objects.all(),
+                fields=('user', 'recipe'),
+            ),
+        ]
 
 
 class RecipeSerializer(serializers.ModelSerializer,
@@ -72,12 +160,9 @@ class RecipeSerializer(serializers.ModelSerializer,
         """Добавление тегов к рецепту."""
         instance.tags.set(tags)
 
-    @transaction.atomic
     def make_ingredients(self, instance, valid_ingredients):
         """Добавление ингредиентов к рецепту."""
         objects = []
-        print(valid_ingredients)
-        print(type(valid_ingredients))
         for data in valid_ingredients:
             amount = data.get('amount')
             ingredients = get_object_or_404(Ingredient, id=data.get('id'))
@@ -90,7 +175,6 @@ class RecipeSerializer(serializers.ModelSerializer,
             )
         IngredientQuantity.objects.bulk_create(objects)
 
-    @transaction.atomic
     def create(self, validated_data):
         """Создание рецепта - POST."""
         ingredients = validated_data.pop('ingredients')
@@ -114,7 +198,6 @@ class RecipeSerializer(serializers.ModelSerializer,
 
         return data
 
-    @transaction.atomic
     def update(self, instance, validated_data):
         """Обновление рецепта - PATCH."""
         instance.tags.clear()
