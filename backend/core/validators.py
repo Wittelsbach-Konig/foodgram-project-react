@@ -83,13 +83,9 @@ class ValidateRecipeMixin():
                                     forbidden_words,
                                     settings.THRESHOLD):
             raise ValidationError(
-                {
-                    'text': [
-                        ("Использование запрещенных слов не допустимо. "
-                         "Ну и ну вы разочаровали партию. "
-                         "-10000 социального рейтинга.")
-                    ]
-                }
+                ("Использование запрещенных слов не допустимо. "
+                 "Ну и ну, вы разочаровали партию. "
+                 "-10000 социального рейтинга.")
             )
         return value
 
@@ -104,16 +100,3 @@ class ValidateRecipeMixin():
                 {'cooking_time': ['Минимальное время = 1'], }
             )
         return value
-
-
-# def validate_subscription(author, user):
-#     if author == user:
-#         return {
-#             "errors": "Нельзя подписываться на самого себя",
-#             "status": status.HTTP_400_BAD_REQUEST,
-#         }
-#     if Subscription.objects.filter(user=user, author=author).exists():
-#         return {
-#             "errors": "Подписка уже оформлена",
-#             "status": status.HTTP_400_BAD_REQUEST,
-#         }

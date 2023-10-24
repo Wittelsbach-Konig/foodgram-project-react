@@ -29,10 +29,10 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
     def get_favourites(self, obj):
-        return obj.favourites_recipe.count()
+        return obj.favourites_list.count()
 
     def show_tags(self, obj):
-        return '\n'.join([tag.tag_name for tag in obj.recipe_tags.all()])
+        return '\n'.join([tag.name for tag in obj.tags.all()])
 
 
 class IngredientAdmin(admin.ModelAdmin):

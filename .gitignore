@@ -1,5 +1,6 @@
 # Image and csv
 backend/media/
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
