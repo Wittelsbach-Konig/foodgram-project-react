@@ -237,7 +237,8 @@ class RecipeSerializer(serializers.ModelSerializer,
         self.make_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
 
-    def to_representation(self, recipe):
+    def to_representation(self, instance):
         """Для чтения используется GetRecipeSerializer."""
-        serializer = GetRecipeSerializer(recipe)
-        return serializer.data
+        request = self.context.get('request')
+        context = {'request': request}
+        return GetRecipeSerializer(instance, context=context).data

@@ -31,10 +31,10 @@ class GetIsSubscribed():
 
     def get_is_subscribed(self, obj):
         """Отображение подписки на пользователя."""
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
+        user = self.context.get('request').user
+        if user.is_anonymous:
             return False
-        return request.user.follower.filter(author=obj.id).exists()
+        return user.follower.filter(author=obj.id).exists()
 
 
 class GetFavorites():

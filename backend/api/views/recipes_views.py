@@ -59,8 +59,8 @@ class RecipeViewSet(viewsets.ModelViewSet,
         serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
-        """Для Get используем другой сериализатор."""
-        if self.request.method == 'GET':
+        """Для SAFE_METHODS используем другой сериализатор."""
+        if self.request.method in permissions.SAFE_METHODS:
             return GetRecipeSerializer
         return RecipeSerializer
 
