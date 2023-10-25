@@ -1,4 +1,4 @@
-import binascii
+# import binascii
 from base64 import b64decode
 from django.core.files.base import ContentFile
 from django.conf import settings
@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.serializers.users_serializers import UserSerializer
-from core.field_mixins import CustomBase64ImageFieldMixin
+# from core.field_mixins import CustomBase64ImageFieldMixin
 from core.mixins import GetFavorites, GetRecipe, GetShoppingList
 from core.validators import (ValidateRecipeMixin, validate_ingredients,
                              validate_tags)
