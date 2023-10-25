@@ -146,8 +146,6 @@ class GetRecipeSerializer(serializers.ModelSerializer,
 
 class RecipeSerializer(serializers.ModelSerializer,
                        GetRecipe,
-                       #  GetFavorites,
-                       #  GetShoppingList,
                        ValidateRecipeMixin):
     """Сериалайзер для рецептов."""
 
@@ -162,14 +160,7 @@ class RecipeSerializer(serializers.ModelSerializer,
         max_length=settings.RECIPE_NAME_MAX_LENGTH,
         validators=(validate_no_obscenities,)
     )
-    # is_favorited = serializers.SerializerMethodField(
-    #     read_only=True
-    # )
-    # is_in_shopping_cart = serializers.SerializerMethodField(
-    #     read_only=True
-    # )
     image = CustomBase64ImageFieldMixin()
-    # image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
