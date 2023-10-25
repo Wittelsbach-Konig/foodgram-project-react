@@ -1,13 +1,10 @@
-# import binascii
-from base64 import b64decode
-from django.core.files.base import ContentFile
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.serializers.users_serializers import UserSerializer
-# from core.field_mixins import CustomBase64ImageFieldMixin
+from core.field_mixins import CustomBase64ImageFieldMixin
 from core.mixins import GetFavorites, GetRecipe, GetShoppingList
 from core.validators import (ValidateRecipeMixin, validate_ingredients,
                              validate_tags)
@@ -129,8 +126,8 @@ class RecipeSerializer(serializers.ModelSerializer,
     is_in_shopping_cart = serializers.SerializerMethodField(
         read_only=True
     )
-    # image = CustomBase64ImageFieldMixin()
-    image = serializers.SerializerMethodField(read_only=True)
+    image = CustomBase64ImageFieldMixin()
+    # image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
@@ -175,12 +172,6 @@ class RecipeSerializer(serializers.ModelSerializer,
         """Создание рецепта - POST."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        image_data = validated_data.pop('image')
-        format, imgstr = image_data.split(';base64,')
-        ext = format.split('/')[-1]
-        filename = f'uploaded_image.{ext}'
-        imgstr = b64decode(imgstr)
-        validated_data['image'] = ContentFile(imgstr, name=filename)
 
         recipe = Recipe.objects.create(**validated_data)
 
