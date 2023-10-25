@@ -87,12 +87,12 @@ class CSVResponseMixin():
             return HttpResponse(content_type='text/csv')
         header = self.get_csv_header(data)
         output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=header)
+        writer = csv.DictWriter(output, fieldnames=header, delimiter=';')
         writer.writeheader()
 
         for row in data:
             writer.writerow(row)
-        response = HttpResponse(content_type='text/csv')
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         response.write(output.getvalue())
