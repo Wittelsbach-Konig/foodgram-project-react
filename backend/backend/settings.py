@@ -180,4 +180,4 @@ MEASUREMENT_UNIT_MAX_LENGTH = 200  # Максимальный размер ед�
 RECIPE_NAME_MAX_LENGTH = 200  # Максимальный размер названия рецепта
 CSV_FOLDER = f"{BASE_DIR}/static/data/"  # Расположение csv файлов
 
-CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
+CSRF_TRUSTED_ORIGINS = ['https://myfoodgram.ddns.net', ]
