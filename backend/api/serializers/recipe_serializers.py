@@ -102,12 +102,11 @@ class ShoppingListSerializer(serializers.ModelSerializer):
         ]
 
 
-class RecipeSerializer(serializers.ModelSerializer,
-                       GetRecipe,
-                       GetFavorites,
-                       GetShoppingList,
-                       ValidateRecipeMixin):
-    """Сериалайзер для рецептов."""
+class GetRecipeSerializer(serializers.ModelSerializer,
+                          GetRecipe,
+                          GetFavorites,
+                          GetShoppingList,):
+    """Сериалайзер только для чтения."""
 
     author = UserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
@@ -116,18 +115,13 @@ class RecipeSerializer(serializers.ModelSerializer,
         many=True,
         source="ingredient_quantity"
     )
-    name = serializers.CharField(
-        max_length=settings.RECIPE_NAME_MAX_LENGTH,
-        validators=(validate_no_obscenities,)
-    )
     is_favorited = serializers.SerializerMethodField(
         read_only=True
     )
     is_in_shopping_cart = serializers.SerializerMethodField(
         read_only=True
     )
-    image = CustomBase64ImageFieldMixin()
-    # image = serializers.SerializerMethodField(read_only=True)
+    image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Recipe
@@ -148,6 +142,49 @@ class RecipeSerializer(serializers.ModelSerializer,
         if obj.image:
             return obj.image.url
         return None
+
+
+class RecipeSerializer(serializers.ModelSerializer,
+                       GetRecipe,
+                       #  GetFavorites,
+                       #  GetShoppingList,
+                       ValidateRecipeMixin):
+    """Сериалайзер для рецептов."""
+
+    author = UserSerializer(read_only=True)
+    tags = TagSerializer(read_only=True, many=True)
+    ingredients = IngredientQuantitySerializer(
+        read_only=True,
+        many=True,
+        source="ingredient_quantity"
+    )
+    name = serializers.CharField(
+        max_length=settings.RECIPE_NAME_MAX_LENGTH,
+        validators=(validate_no_obscenities,)
+    )
+    # is_favorited = serializers.SerializerMethodField(
+    #     read_only=True
+    # )
+    # is_in_shopping_cart = serializers.SerializerMethodField(
+    #     read_only=True
+    # )
+    image = CustomBase64ImageFieldMixin()
+    # image = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            "id",
+            "tags",
+            "author",
+            "ingredients",
+            "is_favorited",
+            "is_in_shopping_cart",
+            "name",
+            "image",
+            "text",
+            "cooking_time",
+        )
 
     def make_tags(self, instance, tags):
         """Добавление тегов к рецепту."""
@@ -201,3 +238,8 @@ class RecipeSerializer(serializers.ModelSerializer,
         ingredients = validated_data.pop('ingredients')
         self.make_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
+
+    def to_representation(self, recipe):
+        """Для чтения используется GetRecipeSerializer."""
+        serializer = GetRecipeSerializer(recipe)
+        return serializer.data
