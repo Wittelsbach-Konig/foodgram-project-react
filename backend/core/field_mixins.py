@@ -14,10 +14,6 @@ class CustomBase64ImageFieldMixin(serializers.ImageField):
     def INVALID_TYPE_MESSAGE(self):
         raise NotImplementedError
 
-    def to_representation(self, obj):
-        """Преобразование объекта в строку или другой формат для чтения."""
-        return obj.image.url
-
     def to_internal_value(self, data):
         """Метод преобразования картинки."""
         if data in self.EMPTY_VALUES:
