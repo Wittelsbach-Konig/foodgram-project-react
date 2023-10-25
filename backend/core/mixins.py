@@ -84,7 +84,7 @@ class CSVResponseMixin():
     def render_to_csv_response(self, data, filename):
         """Записать данные в csv и отправить через HttpResponse."""
         if not data:
-            return HttpResponse(content_type='text/csv')
+            return HttpResponse(content_type='text/csv; charset=cp1251')
         header = self.get_csv_header(data)
         output = io.StringIO()
         writer = csv.DictWriter(output, fieldnames=header, delimiter=';')
@@ -92,7 +92,7 @@ class CSVResponseMixin():
 
         for row in data:
             writer.writerow(row)
-        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response = HttpResponse(content_type='text/csv; charset=cp1251')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
         response.write(output.getvalue())
