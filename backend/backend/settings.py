@@ -179,3 +179,5 @@ INGREDIENT_NAME_MAX_LENGTH = 200  # Максимальный размер инг
 MEASUREMENT_UNIT_MAX_LENGTH = 200  # Максимальный размер единицы измерения
 RECIPE_NAME_MAX_LENGTH = 200  # Максимальный размер названия рецепта
 CSV_FOLDER = f"{BASE_DIR}/static/data/"  # Расположение csv файлов
+
+CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
