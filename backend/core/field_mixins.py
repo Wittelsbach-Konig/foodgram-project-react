@@ -1,7 +1,7 @@
 import binascii
+from base64 import b64decode
 from django.core.files.base import ContentFile
 from django.core.exceptions import ValidationError
-from base64 import b64decode
 from rest_framework import serializers
 
 
