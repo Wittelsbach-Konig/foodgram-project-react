@@ -7,7 +7,8 @@ from api.serializers.recipe_serializers import (FavouriteListSerializer,
                                                 IngredientSerializer,
                                                 RecipeSerializer,
                                                 ShoppingListSerializer,
-                                                TagSerializer)
+                                                TagSerializer,
+                                                GetRecipeSerializer)
 from core.mixins import CSVResponseMixin, ListAndRetrieveModelMixin
 from core.pagination import CustomPagination
 from core.permissions import IsAuthorOrAdminOrReadOnly
@@ -56,6 +57,12 @@ class RecipeViewSet(viewsets.ModelViewSet,
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        """Для Get используем другой сериализатор."""
+        if self.request.method == 'GET':
+            return GetRecipeSerializer
+        return RecipeSerializer
 
     @action(
         detail=False,
