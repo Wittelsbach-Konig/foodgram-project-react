@@ -143,6 +143,11 @@ class RecipeSerializer(serializers.ModelSerializer,
             "cooking_time",
         )
 
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
+
     def make_tags(self, instance, tags):
         """Добавление тегов к рецепту."""
         instance.tags.set(tags)
