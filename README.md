@@ -41,11 +41,14 @@ FoodGram - это универсальный продуктовый помощн
 <details close>
 <summary><h2 style="display: inline"> Инфологическая Схема базы данных </h2></summary>
 Для генерации введите в виртуальном окружении следующее:
+
 ```bash
 python manage.py graph_models -a > erd.dot
 python manage.py graph_models -a -g -o erd.png
 ```
-![Alt text](image.png)
+
+![image](https://github.com/Wittelsbach-Konig/foodgram-project-react/assets/59288516/b278d465-bc4b-4810-b712-d93975dc8dac)
+
 </details>
 
 ## Установка
