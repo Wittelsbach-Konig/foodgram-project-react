@@ -29,18 +29,21 @@ class UserViewSet(BaseUserViewSet):
                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def update(self, request, *args, **kwargs):
+        """Ограничение на PUT."""
         if request.user.is_superuser:
             return super().update(request, *args, **kwargs)
         return Response("Разрешено только адиминистратору!",
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def partial_update(self, request, *args, **kwargs):
+        """Ограничение на PATCH."""
         if request.user.is_superuser:
             return super().partial_update(request, *args, **kwargs)
         return Response("Разрешено только адиминистратору!",
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def destroy(self, request, *args, **kwargs):
+        """Ограничение на DESTROY."""
         if request.user.is_superuser:
             return super().destroy(request, *args, **kwargs)
         return Response("Разрешено только адиминистратору!",
