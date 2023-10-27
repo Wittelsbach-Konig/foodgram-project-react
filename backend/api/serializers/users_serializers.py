@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MaxLengthValidator
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -43,6 +44,11 @@ class UserSignUpSerializer(UserCreateSerializer):
     last_name = serializers.CharField(
         max_length=settings.LASTNAME_MAX_LENGTH,
         validators=(validate_no_obscenities,)
+    )
+    password = serializers.CharField(
+        write_only=True,
+        max_length=settings.PASS_MAX_LENGTH,
+        validators=(MaxLengthValidator, )
     )
 
     class Meta:

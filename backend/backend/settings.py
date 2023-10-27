@@ -81,24 +81,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # postgresql
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'django'),
-        'USER': os.getenv('POSTGRES_USER', 'mastermind'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', 5432),
-    }
-}
-
-# sqlite3
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'django'),
+#         'USER': os.getenv('POSTGRES_USER', 'mastermind'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'password'),
+#         'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+#         'PORT': os.getenv('DB_PORT', 5432),
 #     }
 # }
+
+# sqlite3
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -170,6 +170,7 @@ COMMENTS_MAX_LENGTH = 75  # Максимальный размер коммент
 THRESHOLD = 2  # Порог для расстояния Левенштейна
 EMAIL_MAX_LENGTH = 254  # Максимальный размер email
 SLUG_MAX_LENGTH = 200  # Максимальный размер slug
+PASS_MAX_LENGTH = 150
 FIRSTNAME_MAX_LENGTH = 150  # Максимальный размер имени
 TAGNAME_MAX_LENGTH = 200  # Максимальный размер названия тега
 LASTNAME_MAX_LENGTH = 150  # Максимальный размер фамилии

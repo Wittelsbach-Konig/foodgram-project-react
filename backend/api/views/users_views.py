@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet as BaseUserViewSet
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -19,6 +19,32 @@ class UserViewSet(BaseUserViewSet):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
     pagination_class = CustomPagination
+
+    def create(self, request, *args, **kwargs):
+        """Переопределение метода create для разрешения регистрации."""
+        if not request.user.is_authenticated or request.user.is_superuser:
+            return super().create(request, *args, **kwargs)
+        else:
+            return Response("Вы уже зарегистрированы!",
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def update(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            return super().update(request, *args, **kwargs)
+        return Response("Разрешено только адиминистратору!",
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            return super().partial_update(request, *args, **kwargs)
+        return Response("Разрешено только адиминистратору!",
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def destroy(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            return super().destroy(request, *args, **kwargs)
+        return Response("Разрешено только адиминистратору!",
+                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(
         detail=False,
