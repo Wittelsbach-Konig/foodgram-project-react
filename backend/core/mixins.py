@@ -5,8 +5,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib import styles
 from reportlab.lib.pagesizes import letter
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
 from rest_framework import mixins, viewsets
 
 from core.permissions import IsAdminOrReadOnly
