@@ -3,7 +3,7 @@ from django.contrib import admin
 from .models import (
     Recipe, Ingredient,
     IngredientQuantity, Tag,
-    FavouriteList, ShoppingList,
+    Favourites, Shopping,
 )
 
 
@@ -73,22 +73,8 @@ class TagAdmin(admin.ModelAdmin):
     )
 
 
-class ShoppingListAdmin(admin.ModelAdmin):
-    """ Интерфейс администратора для списка покупок. """
-
-    list_display: tuple = (
-        'pk',
-        'user',
-        'recipe'
-    )
-    search_fields: tuple = (
-        'user',
-        'recipe',
-    )
-
-
-class FavouritesAdmin(admin.ModelAdmin):
-    """ Интерфейс администратора для избранного списка. """
+class ListAdmin(admin.ModelAdmin):
+    """ Интерфейс администратора для списка ибранного/покупок. """
 
     list_display: tuple = (
         'pk',
@@ -105,5 +91,5 @@ admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(IngredientQuantity, IngredientQuantityAdmin)
-admin.site.register(FavouriteList, FavouritesAdmin)
-admin.site.register(ShoppingList, ShoppingListAdmin)
+admin.site.register(Favourites, ListAdmin)
+admin.site.register(Shopping, ListAdmin)

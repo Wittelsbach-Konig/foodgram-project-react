@@ -1,13 +1,19 @@
-import csv
 import io
 from django.http import HttpResponse
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib import styles
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
 from rest_framework import mixins, viewsets
 
 from core.permissions import IsAdminOrReadOnly
 from core.serializers import CompactRecipeSerializer
 
 
-class GetRecipe():
+class GetRecipe:
     """Миксин для получения списка рецептов."""
 
     def get_recipes(self, obj):
@@ -19,44 +25,41 @@ class GetRecipe():
         return CompactRecipeSerializer(recipes, many=True, read_only=True).data
 
 
-class GetRecipesCount():
+class GetRecipesCount:
     """Миксин для получения кол-ва рецептов."""
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
 
 
-class GetIsSubscribed():
+class GetIsSubscribed:
     """Миксин для проверки подписки."""
 
     def get_is_subscribed(self, obj):
         """Отображение подписки на пользователя."""
         user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return user.follower.filter(author=obj.id).exists()
+        return (not user.is_anonymous
+                and user.follower.filter(author=obj.id).exists())
 
 
-class GetFavorites():
+class GetFavorites:
     """Миксин для проверки списка избранного."""
 
     def get_is_favorited(self, obj):
         """Находится ли в избранном."""
         user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return user.favourites_list.filter(recipe=obj.id).exists()
+        return (not user.is_anonymous
+                and user.favourites_list.filter(recipe=obj.id).exists())
 
 
-class GetShoppingList():
+class GetShoppingList:
     """Миксин для проверки списка покупок."""
 
     def get_is_in_shopping_cart(self, obj):
         """Находится ли в списке покупок."""
         user = self.context.get('request').user
-        if user.is_anonymous:
-            return False
-        return user.shopping_list.filter(recipe=obj.id).exists()
+        return (not user.is_anonymous
+                and user.shopping_list.filter(recipe=obj.id).exists())
 
 
 class ListAndRetrieveModelMixin(viewsets.GenericViewSet,
@@ -72,29 +75,39 @@ class ListAndRetrieveModelMixin(viewsets.GenericViewSet,
     pagination_class = None
 
 
-class CSVResponseMixin():
-    """Миксин для преобразования данных в csv."""
+class PDFResponseMixin:
+    """Миксин для преобразования данных в PDF."""
 
-    def get_csv_header(self, data):
-        """Определить названия столбцов."""
-        if data and len(data) > 0:
-            return data[0].keys()
-        return []
+    def render_to_pdf_response(self, ingredients, filename):
+        buffer = io.BytesIO()
 
-    def render_to_csv_response(self, data, filename):
-        """Записать данные в csv и отправить через HttpResponse."""
-        if not data:
-            return HttpResponse(content_type='text/csv; charset=cp1251')
-        header = self.get_csv_header(data)
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=header, delimiter=';')
-        writer.writeheader()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
 
-        for row in data:
-            writer.writerow(row)
-        response = HttpResponse(content_type='text/csv; charset=cp1251')
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        elements = []
 
-        response.write(output.getvalue())
+        pdfmetrics.registerFont(
+            TTFont("TimesNewRoman", "static/data/TimesNewRomanRegular.ttf")
+        )
+        title_style = styles.getSampleStyleSheet()["Title"]
+        title_style.alignment = 1
+        title_style.fontName = "TimesNewRoman"
+        elements.append(Paragraph("Ингредиенты", title_style))
+
+        normal_style = styles.getSampleStyleSheet()["Normal"]
+        normal_style.fontName = "TimesNewRoman"
+
+        for ingredient in ingredients:
+            name = ingredient["ingredients__name"]
+            measurement_unit = ingredient["ingredients__measurement_unit"]
+            amount = ingredient["sum"]
+            ingredient_text = f"{name} - {amount} ({measurement_unit})"
+            elements.append(Paragraph(ingredient_text, normal_style))
+
+        doc.build(elements)
+
+        buffer.seek(0)
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response.write(buffer.read())
 
         return response

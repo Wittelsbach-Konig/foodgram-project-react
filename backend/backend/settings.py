@@ -29,6 +29,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
 ]
 
 THIRD_PARTY_APPS = [
@@ -173,6 +174,7 @@ FIRSTNAME_MAX_LENGTH = 150  # Максимальный размер имени
 TAGNAME_MAX_LENGTH = 200  # Максимальный размер названия тега
 LASTNAME_MAX_LENGTH = 150  # Максимальный размер фамилии
 MIN_VALUE = 1  # Минимальное кол-во времени или кол-во ингредиента
+MAX_VALUE = 32767  # Максимальное значение для short int
 COLOR_CODE_MAX_LENGTH = 7  # Максимальный размер цветового кода
 ROLE_MAX_LENGTH = 20  # Максимальный размер названия роли
 INGREDIENT_NAME_MAX_LENGTH = 200  # Максимальный размер ингредиента
@@ -181,3 +183,8 @@ RECIPE_NAME_MAX_LENGTH = 200  # Максимальный размер назва
 CSV_FOLDER = f"{BASE_DIR}/static/data/"  # Расположение csv файлов
 
 CSRF_TRUSTED_ORIGINS = ['https://myfoodgram.ddns.net', ]
+
+GRAPH_MODELS = {
+    'all_applications': True,
+    'group_models': True,
+}

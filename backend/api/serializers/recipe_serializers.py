@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -9,8 +10,8 @@ from core.mixins import GetFavorites, GetRecipe, GetShoppingList
 from core.validators import (ValidateRecipeMixin, validate_ingredients,
                              validate_tags)
 from obsceneLang.validators import validate_no_obscenities
-from recipes.models import (FavouriteList, Ingredient, IngredientQuantity,
-                            Recipe, ShoppingList, Tag)
+from recipes.models import (Favourites, Ingredient, IngredientQuantity,
+                            Recipe, Shopping, Tag)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -49,8 +50,8 @@ class IngredientSerializer(serializers.ModelSerializer):
         )
 
 
-class IngredientQuantitySerializer(serializers.ModelSerializer):
-    """Сериалайзер для количества ингредиентов."""
+class GetIngredientQuantitySerializer(serializers.ModelSerializer):
+    """Сериалайзер для количества ингредиентов при чтении рецепта."""
 
     id = serializers.ReadOnlyField(source="ingredients.id")
     name = serializers.ReadOnlyField(source="ingredients.name")
@@ -68,18 +69,46 @@ class IngredientQuantitySerializer(serializers.ModelSerializer):
         )
 
 
+class IngredientQuantitySerializer(serializers.ModelSerializer):
+    """Сериалайзер для количества ингредиентов при создании рецепта."""
+
+    id = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = IngredientQuantity
+        fields = (
+            "id",
+            "amount",
+        )
+
+    def validate(self, data):
+        id = data.get('id')
+        amount = data.get('amount')
+
+        if not Ingredient.objects.filter(id=id).exists():
+            raise serializers.ValidationError("Ингредиента не существует.")
+
+        if amount < 1:
+            raise serializers.ValidationError(
+                "Количество ингредиента должно быть больше или равно 1."
+            )
+
+        return data
+
+
 class FavouriteListSerializer(serializers.ModelSerializer):
     """Сериалайзер для списка избранного."""
 
     class Meta:
-        model = FavouriteList
+        model = Favourites
         fields = (
             'user',
             'recipe',
         )
         validators = [
             UniqueTogetherValidator(
-                queryset=FavouriteList.objects.all(),
+                queryset=Favourites.objects.all(),
                 fields=('user', 'recipe'),
             ),
         ]
@@ -89,14 +118,14 @@ class ShoppingListSerializer(serializers.ModelSerializer):
     """Сериалайзер для списка покупок."""
 
     class Meta:
-        model = ShoppingList
+        model = Shopping
         fields = (
             'user',
             'recipe',
         )
         validators = [
             UniqueTogetherValidator(
-                queryset=ShoppingList.objects.all(),
+                queryset=Shopping.objects.all(),
                 fields=('user', 'recipe'),
             ),
         ]
@@ -110,7 +139,7 @@ class GetRecipeSerializer(serializers.ModelSerializer,
 
     author = UserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
-    ingredients = IngredientQuantitySerializer(
+    ingredients = GetIngredientQuantitySerializer(
         read_only=True,
         many=True,
         source="ingredient_quantity"
@@ -152,9 +181,7 @@ class RecipeSerializer(serializers.ModelSerializer,
     author = UserSerializer(read_only=True)
     tags = TagSerializer(read_only=True, many=True)
     ingredients = IngredientQuantitySerializer(
-        read_only=True,
         many=True,
-        source="ingredient_quantity"
     )
     name = serializers.CharField(
         max_length=settings.RECIPE_NAME_MAX_LENGTH,
@@ -194,11 +221,11 @@ class RecipeSerializer(serializers.ModelSerializer,
             )
         IngredientQuantity.objects.bulk_create(objects)
 
+    @transaction.atomic
     def create(self, validated_data):
         """Создание рецепта - POST."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-
         recipe = Recipe.objects.create(**validated_data)
 
         self.make_tags(recipe, tags)
@@ -217,6 +244,7 @@ class RecipeSerializer(serializers.ModelSerializer,
 
         return data
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         """Обновление рецепта - PATCH."""
         instance.tags.clear()

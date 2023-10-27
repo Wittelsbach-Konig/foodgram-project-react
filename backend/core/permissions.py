@@ -27,7 +27,8 @@ class IsAdminOrReadOnly(BasePermission):
                 иначе False.
         """
         return (request.method in SAFE_METHODS
-                or (request.user.is_authenticated and request.user.is_admin))
+                or (request.user.is_authenticated
+                    and request.user.is_superuser))
 
 
 class IsAuthorOrAdminOrReadOnly(IsAuthenticatedOrReadOnly):

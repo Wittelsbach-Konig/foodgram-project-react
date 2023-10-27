@@ -24,8 +24,6 @@ class UserViewSet(BaseUserViewSet):
         detail=False,
         methods=('get', ),
         permission_classes=(permissions.IsAuthenticated,),
-        url_path='me',
-        url_name='me',
     )
     def me(self, request):
         """Возврат профиля пользователя."""
@@ -37,8 +35,6 @@ class UserViewSet(BaseUserViewSet):
         detail=True,
         methods=('post', 'delete',),
         permission_classes=(permissions.IsAuthenticated,),
-        url_path='subscribe',
-        url_name='subscribe',
     )
     def subscribe(self, request, id):
         """Создание/удаление подписок."""
@@ -51,8 +47,6 @@ class UserViewSet(BaseUserViewSet):
         detail=False,
         methods=('get',),
         permission_classes=(permissions.IsAuthenticated,),
-        url_path='subscriptions',
-        url_name='subscriptions',
     )
     def subscriptions(self, request):
         """Получение списка подписок."""

@@ -38,23 +38,12 @@ def validate_ingredients(ingredients):
         raise ValidationError(
             {'ingredients': ['Обязательное поле.']}
         )
-    unique_ingredients = []
+    unique_ingredients = set()
     for item in ingredients:
-        if not Ingredient.objects.filter(id=item.get('id')).exists():
-            raise ValidationError(
-                {'ingredients': ['Ингредиента не существует.']}
-            )
-        ingredient = get_object_or_404(Ingredient, id=item.get('id'))
-        if int(item.get('amount')) < 1:
-            raise ValidationError(
-                {'ingredients': ['Количество ингредиента '
-                                 ' должно быть больше или равно 1.']}
-            )
-        if ingredient in unique_ingredients:
-            raise ValidationError(
-                {'ingredients': ['Ингредиенты должны быть уникальными.']}
-            )
-        unique_ingredients.append(ingredient)
+        id = item.get('id')
+        if id in unique_ingredients:
+            raise ValidationError("Ингредиенты должны быть уникальными.")
+        unique_ingredients.add(id)
     return ingredients
 
 

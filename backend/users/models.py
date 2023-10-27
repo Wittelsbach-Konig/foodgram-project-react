@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.conf import settings
 
@@ -36,7 +37,6 @@ class User(AbstractUser):
     first_name = models.CharField(
         'Имя',
         max_length=settings.FIRSTNAME_MAX_LENGTH,
-        blank=True,
         validators=(
             validate_no_obscenities,
         )
@@ -44,7 +44,6 @@ class User(AbstractUser):
     last_name = models.CharField(
         'Фамилия',
         max_length=settings.LASTNAME_MAX_LENGTH,
-        blank=True,
         validators=(
             validate_no_obscenities,
         )
@@ -89,17 +88,18 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        get_latest_by = ('author')
+        ordering = ('author', )
         constraints = (
             models.UniqueConstraint(
                 name='unique_relationships',
                 fields=('user', 'author'),
             ),
-            models.CheckConstraint(
-                name='prevent_self_follow',
-                check=~models.Q(user=models.F('author')),
-            ),
         )
+
+    def clean(self):
+        """Валидация самоподписки."""
+        if self.user == self.author:
+            raise ValidationError('Подписка на самого себя, запрещена!')
 
     def __str__(self) -> str:
         return f'{self.user} подписан на {self.author}'

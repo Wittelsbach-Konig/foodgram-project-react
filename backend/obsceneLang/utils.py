@@ -18,18 +18,17 @@ def get_words_from_text(text_string: str) -> Set[str]:
 
 def is_forbidden(word: str, forbidden_words: Set[str], threshold: int):
     """Проверка слова с помощью расстояния Левенштейна."""
-    for forbidden_word in forbidden_words:
-        levenshtein_distance = distance(word, forbidden_word)
-        if levenshtein_distance <= threshold:
-            return True
-    return False
+    return any(
+        distance(word, forbidden_word) <= threshold
+        for forbidden_word in forbidden_words
+    )
 
 
 def text_has_forbidden_words(set_string: Set[str],
                              forbidden_words_set: Set[str],
                              threshold: int) -> bool:
     """Проверка текста с помощью расстояния Левенштейна."""
-    for word in set_string:
-        if is_forbidden(word, forbidden_words_set, threshold):
-            return True
-    return False
+    return any(
+        is_forbidden(word, forbidden_words_set, threshold)
+        for word in set_string
+    )

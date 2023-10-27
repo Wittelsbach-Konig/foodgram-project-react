@@ -9,12 +9,12 @@ from api.serializers.recipe_serializers import (FavouriteListSerializer,
                                                 ShoppingListSerializer,
                                                 TagSerializer,
                                                 GetRecipeSerializer)
-from core.mixins import CSVResponseMixin, ListAndRetrieveModelMixin
+from core.mixins import ListAndRetrieveModelMixin, PDFResponseMixin
 from core.pagination import CustomPagination
 from core.permissions import IsAuthorOrAdminOrReadOnly
 from core.utils import recipe_post_delete_action
-from recipes.models import (FavouriteList, Ingredient, IngredientQuantity,
-                            Recipe, ShoppingList, Tag)
+from recipes.models import (Favourites, Ingredient, IngredientQuantity,
+                            Recipe, Shopping, Tag)
 
 
 class TagViewSet(ListAndRetrieveModelMixin):
@@ -41,7 +41,7 @@ class IngredientViewSet(ListAndRetrieveModelMixin):
 
 
 class RecipeViewSet(viewsets.ModelViewSet,
-                    CSVResponseMixin):
+                    PDFResponseMixin):
     """ViewSet для рецептов, список покупок и избранного.
 
     Args:
@@ -67,8 +67,6 @@ class RecipeViewSet(viewsets.ModelViewSet,
     @action(
         detail=False,
         methods=('get',),
-        url_path='download_shopping_cart',
-        url_name='download_shopping_cart',
         permission_classes=(permissions.IsAuthenticated,),
     )
     def download_shopping_cart(self, request):
@@ -83,37 +81,25 @@ class RecipeViewSet(viewsets.ModelViewSet,
                 'ingredients__name',
             ).annotate(sum=Sum('amount'))
         )
-        data = [
-            {
-                'Ингредиент': item['ingredients__name'],
-                'Единица измерения': item['ingredients__measurement_unit'],
-                'Количество': item['sum']
-            }
-            for item in ingredient_list
-        ]
-        filename = "shopping_list.csv"
-        return self.render_to_csv_response(data, filename)
+        filename = "shopping_list.pdf"
+        return self.render_to_pdf_response(ingredient_list, filename)
 
     @action(
         detail=True,
         methods=('post', 'delete'),
-        url_path='shopping_cart',
-        url_name='shopping_cart',
         permission_classes=(permissions.IsAuthenticated,),
     )
     def shopping_cart(self, request, pk):
         """Добавление/Удаление рецептов в списке покупок."""
         return recipe_post_delete_action(ShoppingListSerializer,
-                                         ShoppingList, request, pk, Recipe)
+                                         Shopping, request, pk, Recipe)
 
     @action(
         detail=True,
         methods=('post', 'delete'),
-        url_path='favorite',
-        url_name='favorite',
         permission_classes=(permissions.IsAuthenticated,),
     )
     def favorite(self, request, pk):
         """Добавление/Удаление рецептов в избранном."""
         return recipe_post_delete_action(FavouriteListSerializer,
-                                         FavouriteList, request, pk, Recipe)
+                                         Favourites, request, pk, Recipe)
