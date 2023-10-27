@@ -33,7 +33,7 @@ FoodGram - это универсальный продуктовый помощн
 Администратор:
 
 ```bash
-   email - alex@ya.ru
+   email - alex@yandex.ru
    пароль - Admin12345
 ```
 </details>
