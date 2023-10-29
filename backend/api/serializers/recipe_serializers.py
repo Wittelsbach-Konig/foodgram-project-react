@@ -89,9 +89,15 @@ class IngredientQuantitySerializer(serializers.ModelSerializer):
         if not Ingredient.objects.filter(id=id).exists():
             raise serializers.ValidationError("Ингредиента не существует.")
 
-        if amount < 1:
+        if amount < settings.MIN_VALUE:
             raise serializers.ValidationError(
-                "Количество ингредиента должно быть больше или равно 1."
+                ("Количество ингредиента должно быть"
+                 f"больше или равно {settings.MIN_VALUE}.")
+            )
+        if amount > settings.MAX_VALUE:
+            raise serializers.ValidationError(
+                ("Количество ингредиента должно быть"
+                 f"меньше или равно {settings.MAX_VALUE}.")
             )
 
         return data
@@ -226,10 +232,10 @@ class RecipeSerializer(serializers.ModelSerializer,
         """Создание рецепта - POST."""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-
-        self.make_tags(recipe, tags)
-        self.make_ingredients(recipe, ingredients)
+        recipe, is_created = Recipe.objects.get_or_create(**validated_data)
+        if is_created:
+            self.make_tags(recipe, tags)
+            self.make_ingredients(recipe, ingredients)
         return recipe
 
     def validate(self, data):

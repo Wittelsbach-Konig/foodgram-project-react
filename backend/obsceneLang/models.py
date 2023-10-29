@@ -19,3 +19,8 @@ class ForbiddenWord(models.Model):
 
     def __str__(self) -> str:
         return self.word
+
+    def clean(self, *args, **kwargs) -> None:
+        """Валидация поля word."""
+        self.word = self.word.lower()
+        return super().clean(*args, **kwargs)

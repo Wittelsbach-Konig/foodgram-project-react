@@ -96,10 +96,11 @@ class Subscription(models.Model):
             ),
         )
 
-    def clean(self):
+    def clean(self) -> None:
         """Валидация самоподписки."""
         if self.user == self.author:
             raise ValidationError('Подписка на самого себя, запрещена!')
+        return super().clean()
 
     def __str__(self) -> str:
         return f'{self.user} подписан на {self.author}'

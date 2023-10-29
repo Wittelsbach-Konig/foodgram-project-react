@@ -22,6 +22,13 @@ ALLOWED_HOSTS = os.getenv(
     default='127.0.0.1 localhost',
 ).split()
 
+CSRF_COOKIE_SECURE = True
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://127.0.0.1 http://localhost',
+).split()
+
 DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -115,7 +122,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 TIME_ZONE = 'UTC'
 
@@ -124,7 +131,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'collected_static'
+STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -182,8 +189,7 @@ INGREDIENT_NAME_MAX_LENGTH = 200  # Максимальный размер инг
 MEASUREMENT_UNIT_MAX_LENGTH = 200  # Максимальный размер единицы измерения
 RECIPE_NAME_MAX_LENGTH = 200  # Максимальный размер названия рецепта
 CSV_FOLDER = f"{BASE_DIR}/static/data/"  # Расположение csv файлов
-
-CSRF_TRUSTED_ORIGINS = ['https://myfoodgram.ddns.net', ]
+RECIPE_IMAGE_SIZE = 600, 600  # Размер картинки
 
 GRAPH_MODELS = {
     'all_applications': True,

@@ -1,7 +1,9 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.exceptions import ValidationError
 from colorfield.fields import ColorField
+from PIL import Image
 
 
 class Tag(models.Model):
@@ -39,6 +41,12 @@ class Tag(models.Model):
     def __str__(self) -> str:
         return self.slug
 
+    def clean(self) -> None:
+        self.name = self.name.lower()
+        self.slug = self.slug.lower()
+        self.color = self.color.capitalize()
+        return super().clean()
+
 
 class Ingredient(models.Model):
     """Модель для ингредиентов.
@@ -71,6 +79,11 @@ class Ingredient(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}, {self.measurement_unit}"
+
+    def clean(self, *args, **kwargs) -> None:
+        self.name = self.name.lower()
+        self.measurement_unit = self.measurement_unit.lower()
+        return super().clean(*args, **kwargs)
 
 
 class Recipe(models.Model):
@@ -143,6 +156,26 @@ class Recipe(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def clean(self, *args, **kwargs) -> None:
+        """Валидация при создании рецептов."""
+        super().clean(*args, **kwargs)
+        # self.name = self.name.capitalize()
+        # recipe_kwargs = {
+        #     'author': self.author,
+        #     'name': self.name,
+        # }
+        # existing_recipe = (Recipe.objects
+        #                    .filter(**recipe_kwargs)
+        #                    .exclude(id=self.pk))
+        # if existing_recipe.exists():
+        #     raise ValidationError("Рецепт уже существует.")
+
+    def save(self, *args, **kwargs) -> None:
+        super().save(*args, **kwargs)
+        image = Image.open(self.image.path)
+        image.thumbnail(settings.RECIPE_IMAGE_SIZE)
+        image.save(self.image.path)
 
 
 class IngredientQuantity(models.Model):
@@ -217,12 +250,24 @@ class AbstractRecipeListModel(models.Model):
 
     class Meta:
         abstract = True
+        unique_together = ['user', 'recipe']
         constraints = (
             models.UniqueConstraint(
-                name='unique_shopping',
+                name='recipe is already in %(class)s_list',
                 fields=('user', 'recipe')
             ),
         )
+
+    def clean(self, *args, **kwargs):
+        """
+        Проверяем, существует ли уже такой
+        рецепт в списке у пользователя.
+        """
+        if self.__class__.objects.filter(
+            user=self.user, recipe=self.recipe
+        ).exists():
+            raise ValidationError("Этот рецепт уже добавлен в список.")
+        return super().clean(*args, **kwargs)
 
 
 class Shopping(AbstractRecipeListModel):

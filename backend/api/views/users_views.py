@@ -15,38 +15,35 @@ from users.models import Subscription, User
 class UserViewSet(BaseUserViewSet):
     """ViewSet для Пользователей."""
 
-    query = User.objects.all()
+    queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly, )
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     pagination_class = CustomPagination
 
     def create(self, request, *args, **kwargs):
         """Переопределение метода create для разрешения регистрации."""
-        if not request.user.is_authenticated or request.user.is_superuser:
-            return super().create(request, *args, **kwargs)
-        else:
+        if not request.user.is_anonymous:
             return Response("Вы уже зарегистрированы!",
                             status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        user_id = kwargs.get('id')
+        if user_id and User.objects.filter(id=user_id).exists():
+            return Response("Пользователь с таким id уже существует!",
+                            status=status.HTTP_405_METHOD_NOT_ALLOWED)
+        return super().create(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
         """Ограничение на PUT."""
-        if request.user.is_superuser:
-            return super().update(request, *args, **kwargs)
-        return Response("Разрешено только адиминистратору!",
+        return Response("Метод запрещён партией!",
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def partial_update(self, request, *args, **kwargs):
         """Ограничение на PATCH."""
-        if request.user.is_superuser:
-            return super().partial_update(request, *args, **kwargs)
-        return Response("Разрешено только адиминистратору!",
+        return Response("Метод запрещён партией!",
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def destroy(self, request, *args, **kwargs):
         """Ограничение на DESTROY."""
-        if request.user.is_superuser:
-            return super().destroy(request, *args, **kwargs)
-        return Response("Разрешено только адиминистратору!",
+        return Response("Метод запрещён партией!",
                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(
