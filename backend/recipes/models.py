@@ -42,9 +42,9 @@ class Tag(models.Model):
         return self.slug
 
     def clean(self) -> None:
-        self.name = self.name.lower()
+        self.name = self.name.capitalize()
         self.slug = self.slug.lower()
-        self.color = self.color.capitalize()
+        self.color = self.color.upper()
         return super().clean()
 
 
@@ -81,7 +81,7 @@ class Ingredient(models.Model):
         return f"{self.name}, {self.measurement_unit}"
 
     def clean(self, *args, **kwargs) -> None:
-        self.name = self.name.lower()
+        self.name = self.name.capitalize()
         self.measurement_unit = self.measurement_unit.lower()
         return super().clean(*args, **kwargs)
 
@@ -156,20 +156,6 @@ class Recipe(models.Model):
 
     def __str__(self) -> str:
         return self.name
-
-    def clean(self, *args, **kwargs) -> None:
-        """Валидация при создании рецептов."""
-        super().clean(*args, **kwargs)
-        # self.name = self.name.capitalize()
-        # recipe_kwargs = {
-        #     'author': self.author,
-        #     'name': self.name,
-        # }
-        # existing_recipe = (Recipe.objects
-        #                    .filter(**recipe_kwargs)
-        #                    .exclude(id=self.pk))
-        # if existing_recipe.exists():
-        #     raise ValidationError("Рецепт уже существует.")
 
     def save(self, *args, **kwargs) -> None:
         super().save(*args, **kwargs)
