@@ -165,8 +165,8 @@ DJOSER = {
         'current_user': 'api.serializers.users_serializers.UserSerializer',
     },
     'PERMISSIONS': {
-        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
-        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ('djoser.permissions.CurrentUserOrAdminOrReadOnly',),
+        'user_list': ('rest_framework.permissions.AllowAny',),
     },
     'HIDE_USERS': False,
 }
@@ -194,4 +194,22 @@ RECIPE_IMAGE_SIZE = 600, 600  # Размер картинки
 GRAPH_MODELS = {
     'all_applications': True,
     'group_models': True,
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "level": "DEBUG",  # if DEBUG else 'ERROR',
+            "handlers": [
+                "console",
+            ],
+        },
+    },
 }

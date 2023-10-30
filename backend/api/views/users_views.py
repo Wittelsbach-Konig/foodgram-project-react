@@ -17,11 +17,12 @@ class UserViewSet(BaseUserViewSet):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.AllowAny,)
     pagination_class = CustomPagination
 
     def create(self, request, *args, **kwargs):
         """Переопределение метода create для разрешения регистрации."""
+        print('PIZDEC')
         if not request.user.is_anonymous:
             return Response("Вы уже зарегистрированы!",
                             status=status.HTTP_405_METHOD_NOT_ALLOWED)

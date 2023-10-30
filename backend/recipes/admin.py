@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 
 from recipes.models import (
     Recipe, Ingredient,
@@ -7,12 +8,28 @@ from recipes.models import (
 )
 
 
+class IngredientQuantityInlineFormSet(forms.BaseInlineFormSet):
+    """FormSet для ингредиентов в рецепте."""
+
+    def clean(self):
+        """Запрещаем возможность сохранить рецепт без ингредиентов."""
+        super().clean()
+        if not any(
+            cleaned_data and not cleaned_data.get('DELETE')
+            for cleaned_data in self.cleaned_data
+        ):
+            raise forms.ValidationError(
+                'Рецепт должен содержать как минимум один ингредиент.'
+            )
+
+
 class IngredientInline(admin.TabularInline):
     """Встроенный интерфейс для ингредиентов в рецептах админки."""
 
     model = IngredientQuantity
     extra = 2
     min_num = 1
+    formset = IngredientQuantityInlineFormSet
 
     def has_delete_permission(self, request, obj=None):
         ingredient_count = obj.ingredients.count() if obj else 0
